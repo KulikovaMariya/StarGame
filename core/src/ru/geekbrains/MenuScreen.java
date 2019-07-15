@@ -63,4 +63,24 @@ public class MenuScreen extends BaseScreen {
         y = (direction.y * speed) / length;
         v.set(x, y);
     }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        v.set(0, 0);
+        Vector2 shift = new Vector2();
+        if (keycode == 19) {
+            shift.set(0, 3);
+        }
+        if (keycode == 20) {
+            shift.set(0, -3);
+        }
+        if (keycode == 21) {
+            shift.set(-3, 0);
+        }
+        if (keycode == 22) {
+            shift.set(3, 0);
+        }
+        position.add(shift);
+        return false;
+    }
 }
