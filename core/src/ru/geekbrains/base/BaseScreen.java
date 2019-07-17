@@ -18,8 +18,8 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     private Rect worldBounds;
     private Rect glBounds;
     private Matrix4 worldToGl;
-    protected Matrix3 screenToWorld;
-    private Vector2 touch;
+    private Matrix3 screenToWorld;
+    protected Vector2 touch;
 
 
     @Override
@@ -100,13 +100,20 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         touch.set(screenX, screenBounds.getHeight() - screenY).mul(screenToWorld);
-        touchDown(touch, pointer, button);
+        logTouchDownEvent(touch, pointer, button);
+        onTouchDown();
         return true;
     }
 
-    public boolean touchDown(Vector2 touch, int pointer, int button) {
-        System.out.println("touchDown touch.X = " + touch.x + " touch.Y = " + touch.y);
-        return true;
+    public abstract void onTouchDown();
+
+    public void logTouchDownEvent(Vector2 touch, int pointer, int button) {
+        System.out.println("TouchDown invoked:");
+        printVector(touch, "touch");
+    }
+
+    public void printVector(Vector2 vector, String name) {
+        System.out.println("     Vector " + name + ".X = " + vector.x + " " + name + ".Y = " + vector.y);
     }
 
     @Override
