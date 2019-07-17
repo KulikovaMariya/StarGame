@@ -13,6 +13,7 @@ public class MenuScreen extends BaseScreen {
     private Vector2 touch;
     private Vector2 v;
     private Vector2 position;
+    private Vector2 buffer;
     private static final float speed = 1;
 
     @Override
@@ -23,18 +24,20 @@ public class MenuScreen extends BaseScreen {
         touch = new Vector2();
         v = new Vector2();
         position = new Vector2();
+        buffer = new Vector2();
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
-        if (Math.abs(touch.x - position.x) < 1 && Math.abs(touch.y - position.y) < 1) {
+        buffer.set(touch);
+        if (buffer.sub(position).len() > speed) {
+            position.add(v);
+        } else {
+            position.set(touch);
             v.set(0, 0);
-            // to make sure that condition in row 31 happen only on start or
-            // when user does mouse click and the logo come to the position
             touch.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
         }
-        position.add(v);
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
