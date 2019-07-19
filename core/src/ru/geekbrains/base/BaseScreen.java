@@ -4,15 +4,36 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix3;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
+
+import ru.geekbrains.math.MatrixUtils;
+import ru.geekbrains.math.Rect;
+
 
 public abstract class BaseScreen implements Screen, InputProcessor {
     protected SpriteBatch batch;
+    private Rect screenBounds;
+    private Rect worldBounds;
+    private Rect glBounds;
+    private Matrix4 worldToGl;
+    private Matrix3 screenToWorld;
+    protected Vector2 touch;
+
 
     @Override
     public void show() {
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(this);
         System.out.println("show");
+        screenBounds = new Rect();
+        worldBounds = new Rect();
+        glBounds = new Rect(0,0, 1f, 1f);
+        worldToGl = new Matrix4();
+        screenToWorld = new Matrix3();
+        touch = new Vector2();
+
     }
 
     @Override
@@ -23,6 +44,20 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     @Override
     public void resize(int width, int height) {
         System.out.println("resize width : " + width + " height: " + height);
+        screenBounds.setSize(width, height);
+        screenBounds.setLeft(0);
+        screenBounds.setBottom(0);
+        float aspect = width / (float) height;
+        worldBounds.setHeight(1f);
+        worldBounds.setWidth(1f * aspect);
+        MatrixUtils.calcTransitionMatrix(worldToGl, worldBounds, glBounds);
+        batch.setProjectionMatrix(worldToGl);
+        resize(worldBounds);
+        MatrixUtils.calcTransitionMatrix(screenToWorld, screenBounds, worldBounds);
+    }
+
+    public void resize(Rect worldBounds) {
+        System.out.println("resize worldBounds.width - " + worldBounds.getWidth() + " worldBounds.height - " + worldBounds.getHeight());
     }
 
     @Override
@@ -64,7 +99,21 @@ public abstract class BaseScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return false;
+        touch.set(screenX, screenBounds.getHeight() - screenY).mul(screenToWorld);
+        logTouchDownEvent(touch, pointer, button);
+        onTouchDown();
+        return true;
+    }
+
+    public abstract void onTouchDown();
+
+    public void logTouchDownEvent(Vector2 touch, int pointer, int button) {
+        System.out.println("TouchDown invoked:");
+        printVector(touch, "touch");
+    }
+
+    public void printVector(Vector2 vector, String name) {
+        System.out.println("     Vector " + name + ".X = " + vector.x + " " + name + ".Y = " + vector.y);
     }
 
     @Override
