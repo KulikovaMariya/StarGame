@@ -29,16 +29,16 @@ public class Ship extends Sprite {
     public void show() {
         v = new Vector2();
         buffer = new Vector2();
-        endPos = new Vector2();
+        endPos = new Vector2(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
     }
 
     @Override
     public void update(float delta) {
-        buffer.set(endPos);
-        if (buffer.sub(pos).len() > SPEED) {
+//        buffer.set(endPos);
+        if (Math.abs(endPos.x - pos.x) > SPEED) {
             pos.add(v);
         } else {
-            pos.set(endPos);
+            pos.set(endPos.x, pos.y);
             v.set(0, 0);
             endPos.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
         }
