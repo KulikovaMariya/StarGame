@@ -96,4 +96,10 @@ public class GameScreen extends BaseScreen {
         ship.touchDown(touch, pointer, button);
         return true;
     }
+
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer, int button) {
+        ship.touchUp(touch, pointer, button);
+        return true;
+    }
 }

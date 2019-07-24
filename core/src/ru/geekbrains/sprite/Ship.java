@@ -1,7 +1,7 @@
 package ru.geekbrains.sprite;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 import ru.geekbrains.base.Sprite;
@@ -9,87 +9,132 @@ import ru.geekbrains.math.Rect;
 
 public class Ship extends Sprite {
 
-    private Vector2 v;
-    private static final float SPEED = 0.02f;
-    private Vector2 buffer;
-    private Vector2 endPos;
+    private static final int INVALID_POINTER = -1;
+
+
+    private Vector2 v0 = new Vector2(0.5f, 0);
+    private Vector2 v = new Vector2();
+
+    private boolean isPressedLeft = false;
+    private boolean isPressedRight = false;
+
     private Rect worldBounds;
 
+    private int leftPointer = INVALID_POINTER;
+    private int rightPointer = INVALID_POINTER;
+
     public Ship(TextureAtlas atlas) {
-        super(atlas.findRegion("main_ship"));
+        super(atlas.findRegion("main_ship"), 1, 2, 2);
     }
 
     @Override
     public void resize(Rect worldBounds) {
         this.worldBounds = worldBounds;
-        setHeightProportion(0.20f);
-        setBottom(worldBounds.getBottom() + 0.005f);
+        setHeightProportion(0.15f);
+        setBottom(worldBounds.getBottom() + 0.05f);
     }
 
     public void show() {
-        v = new Vector2();
-        buffer = new Vector2();
-        endPos = new Vector2(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
     }
 
     @Override
     public void update(float delta) {
-//        buffer.set(endPos);
-        if (Math.abs(endPos.x - pos.x) > SPEED) {
-            pos.add(v);
-        } else {
-            pos.set(endPos.x, pos.y);
-            v.set(0, 0);
-            endPos.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+        pos.mulAdd(v, delta);
+        if (getRight() > worldBounds.getRight()) {
+            setRight(worldBounds.getRight());
+            stop();
         }
-        checkBounds();
+        if (getLeft() < worldBounds.getLeft()) {
+            setLeft(worldBounds.getLeft());
+            stop();
+        }
     }
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        endPos.set(touch);
-        if (touch.x - pos.x > 0) {
-            v.set(SPEED, 0);
+        if (touch.x < worldBounds.pos.x) {
+            if (leftPointer != INVALID_POINTER) {
+                return false;
+            }
+            leftPointer = pointer;
+            moveLeft();
         } else {
-            v.set(-SPEED, 0);
+            if (rightPointer != INVALID_POINTER) {
+                return false;
+            }
+            rightPointer = pointer;
+            moveRight();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer, int button) {
+        if (pointer == leftPointer) {
+            leftPointer = INVALID_POINTER;
+            if (rightPointer != INVALID_POINTER) {
+                moveRight();
+            } else {
+                stop();
+            }
+        } else if (pointer == rightPointer) {
+            rightPointer = INVALID_POINTER;
+            if (leftPointer != INVALID_POINTER) {
+                moveLeft();
+            } else {
+                stop();
+            }
         }
         return true;
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        v.set(0, 0);
-        if (keycode == 19) {
-            v.set(0, SPEED);
-        }
-        if (keycode == 20) {
-            v.set(0, -SPEED);
-        }
-        if (keycode == 21) {
-            v.set(-SPEED, 0);
-        }
-        if (keycode == 22) {
-            v.set(SPEED, 0);
+        switch (keycode) {
+            case Input.Keys.LEFT:
+            case Input.Keys.A:
+                moveLeft();
+                isPressedLeft = true;
+                break;
+            case Input.Keys.RIGHT:
+            case Input.Keys.D:
+                moveRight();
+                isPressedRight = true;
+                break;
         }
         return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode >= 19 && keycode <= 22 ) {
-            v.set(0, 0);
+        switch (keycode) {
+            case Input.Keys.LEFT:
+            case Input.Keys.A:
+                if (!isPressedRight) {
+                    stop();
+                }
+                isPressedLeft = false;
+                break;
+            case Input.Keys.RIGHT:
+            case Input.Keys.D:
+                if (!isPressedLeft) {
+                    stop();
+                }
+                isPressedRight = false;
+                break;
         }
         return true;
     }
 
-    private void checkBounds() {
-        if (getRight() > worldBounds.getRight() && v.x > 0) {
-            v.set(0, 0);
-            setRight(worldBounds.getRight());
-        }
-        if (getLeft() < worldBounds.getLeft() && v.x < 0) {
-            v.set(0, 0);
-            setLeft(worldBounds.getLeft());
-        }
+    private void moveRight() {
+        v.set(v0);
+    }
+
+    private void moveLeft() {
+        v.set(v0).rotate(180);
+    }
+
+    private void stop() {
+        v.setZero();
     }
 }
