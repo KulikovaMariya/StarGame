@@ -1,19 +1,21 @@
 package ru.geekbrains.sprite;
-
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-
 import ru.geekbrains.base.Sprite;
 import ru.geekbrains.math.Rect;
+import ru.geekbrains.pool.BulletPool;
 
 public class Ship extends Sprite {
 
     private static final int INVALID_POINTER = -1;
 
+    private TextureRegion bulletRegion;
 
     private Vector2 v0 = new Vector2(0.5f, 0);
     private Vector2 v = new Vector2();
+    private Vector2 bulletV = new Vector2(0, 0.5f);
 
     private boolean isPressedLeft = false;
     private boolean isPressedRight = false;
@@ -23,8 +25,16 @@ public class Ship extends Sprite {
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
 
-    public Ship(TextureAtlas atlas) {
+    private float reloadInterval;
+    private float reloadTimer;
+
+    private BulletPool bulletPool;
+
+    public Ship(TextureAtlas atlas, BulletPool bulletPool) {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
+        this.bulletPool = bulletPool;
+        this.bulletRegion = atlas.findRegion("bulletMainShip");
+        this.reloadInterval = 0.2f;
     }
 
     @Override
@@ -40,6 +50,11 @@ public class Ship extends Sprite {
     @Override
     public void update(float delta) {
         pos.mulAdd(v, delta);
+        reloadTimer += delta;
+        if (reloadTimer >= reloadInterval) {
+            reloadTimer = 0;
+            shoot();
+        }
         if (getRight() > worldBounds.getRight()) {
             setRight(worldBounds.getRight());
             stop();
@@ -101,6 +116,9 @@ public class Ship extends Sprite {
                 moveRight();
                 isPressedRight = true;
                 break;
+             case Input.Keys.UP:
+                 shoot();
+                 break;
         }
         return true;
     }
@@ -136,5 +154,10 @@ public class Ship extends Sprite {
 
     private void stop() {
         v.setZero();
+    }
+
+    private void shoot() {
+        Bullet bullet = bulletPool.obtain();
+        bullet.set(this, bulletRegion, pos, bulletV, 0.01f, worldBounds, 1);
     }
 }
