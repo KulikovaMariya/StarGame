@@ -3,19 +3,26 @@ package ru.geekbrains.base;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-
 import ru.geekbrains.math.Rect;
+import ru.geekbrains.utils.Regions;
 
 public abstract class Sprite extends Rect {
     protected float angle;
     protected float scale = 1f;
     protected TextureRegion[] regions;
     protected int frame;
+    private boolean isDestroyed;
+
+    public Sprite() {
+    }
+
+    public Sprite(TextureRegion region, int rows, int cols, int frames) {
+        this.regions = Regions.split(region, 1, 2, 2);
+    }
 
     public Sprite(TextureRegion region) {
         this.regions = new TextureRegion[1];
         this.regions[0] = region;
-        setHeightProportion(0.3f);
     }
 
     public void resize(Rect worldBound){
@@ -73,5 +80,17 @@ public abstract class Sprite extends Rect {
 
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+    public void destroyed() {
+        isDestroyed = true;
+    }
+
+    public void flushdestroyed() {
+        isDestroyed = false;
+    }
+
+    public boolean isDestroyed() {
+        return isDestroyed;
     }
 }
