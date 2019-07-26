@@ -1,6 +1,7 @@
 package ru.geekbrains;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -29,10 +30,15 @@ public class GameScreen extends BaseScreen {
     private EnemyShip enemyShip;
     private TextureRegion[] enemyRegion;
     private static final int STAR_COUNT = 64;
+    private Music music;
 
     @Override
     public void show() {
         super.show();
+        music = Gdx.audio.newMusic(Gdx.files.internal("sounds/music.mp3"));
+        music.setVolume(1);
+        music.setLooping(true);
+        music.play();
         atlas = new TextureAtlas("mainAtlas.tpack");
         bg = new Texture("bg.png");
         background = new Background(new TextureRegion(bg));
@@ -73,6 +79,8 @@ public class GameScreen extends BaseScreen {
         bg.dispose();
         bulletPool.dispose();
         enemyPool.dispose();
+        music.dispose();
+        ship.dispose();
     }
 
     @Override
