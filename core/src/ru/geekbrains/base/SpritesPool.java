@@ -45,7 +45,7 @@ public abstract class SpritesPool <T extends  Sprite>{
                     freeObjects.add(sprite);
                 }
                 i--;
-                sprite.flushdestroyed();
+                sprite.flushDestroyed();
             }
         }
     }
@@ -55,7 +55,17 @@ public abstract class SpritesPool <T extends  Sprite>{
     }
 
     public void dispose() {
+        disposeAllSprites();
         activeObjects.clear();
         freeObjects.clear();
+    }
+
+    public void disposeAllSprites() {
+        for (T sprite : activeObjects) {
+            sprite.dispose();
+        }
+        for (T sprite : freeObjects) {
+            sprite.dispose();
+        }
     }
 }
