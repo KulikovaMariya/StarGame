@@ -13,6 +13,7 @@ import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 import ru.geekbrains.pool.EnemyPool;
 import ru.geekbrains.sprite.Background;
+import ru.geekbrains.sprite.EnemyShip;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyGenerator;
@@ -57,7 +58,7 @@ public class GameScreen extends BaseScreen {
     public void render(float delta) {
         super.render(delta);
         update(delta);
-        checkCollisions();
+        checkCollisions(enemyPool);
         freeAllDestroyedActiveSprites();
         draw();
     }
@@ -117,8 +118,12 @@ public class GameScreen extends BaseScreen {
         enemyGenerator.generate(delta);
     }
 
-    private void checkCollisions() {
-
+    private void checkCollisions(EnemyPool enemyPool) {
+        for (EnemyShip enemy : enemyPool.getActiveObjects()) {
+            if (!enemy.isOutside(mainShip)) {
+                enemy.setDestroyed();
+            }
+        }
     }
 
     private void freeAllDestroyedActiveSprites() {

@@ -43,7 +43,7 @@ public class EnemyShip extends Ship {
                     shoot();
                 }
                 if (getBottom() < worldBounds.getBottom()) {
-                    destroyed();
+                    setDestroyed();
                 }
                 break;
         }
