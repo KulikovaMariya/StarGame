@@ -13,9 +13,9 @@ import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 import ru.geekbrains.pool.EnemyPool;
 import ru.geekbrains.sprite.Background;
-import ru.geekbrains.sprite.EnemyShip;
-import ru.geekbrains.sprite.Ship;
+import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
+import ru.geekbrains.utils.EnemyGenerator;
 import ru.geekbrains.utils.Regions;
 
 public class GameScreen extends BaseScreen {
@@ -24,10 +24,10 @@ public class GameScreen extends BaseScreen {
     private Texture bg;
     private Background background;
     private Star[] starArray;
-    private Ship ship;
+    private MainShip mainShip;
     private EnemyPool enemyPool;
+    private EnemyGenerator enemyGenerator;
     private BulletPool bulletPool;
-    private EnemyShip enemyShip;
     private TextureRegion[] enemyRegion;
     private static final int STAR_COUNT = 64;
     private Music music;
@@ -48,15 +48,16 @@ public class GameScreen extends BaseScreen {
             starArray[i] = new Star(atlas);
         }
         bulletPool = new BulletPool();
-        ship = new Ship(atlas, bulletPool);
-        enemyPool = new EnemyPool();
-        enemyShip = enemyPool.obtain();
+        enemyPool = new EnemyPool(bulletPool, worldBounds);
+        enemyGenerator = new EnemyGenerator(enemyPool, atlas, worldBounds);
+        mainShip = new MainShip(atlas, bulletPool);
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
         update(delta);
+        checkCollisions();
         freeAllDestroyedActiveSprites();
         draw();
     }
@@ -68,8 +69,7 @@ public class GameScreen extends BaseScreen {
         for (Star star : starArray) {
             star.resize(worldBounds);
         }
-        ship.resize(worldBounds);
-        enemyShip.set(enemyRegion, worldBounds);
+        mainShip.resize(worldBounds);
     }
 
     @Override
@@ -80,30 +80,30 @@ public class GameScreen extends BaseScreen {
         bulletPool.dispose();
         enemyPool.dispose();
         music.dispose();
-        ship.dispose();
+        mainShip.dispose();
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        ship.keyDown(keycode);
+        mainShip.keyDown(keycode);
         return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        ship.keyUp(keycode);
+        mainShip.keyUp(keycode);
         return true;
     }
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        ship.touchDown(touch, pointer, button);
+        mainShip.touchDown(touch, pointer, button);
         return true;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        ship.touchUp(touch, pointer, button);
+        mainShip.touchUp(touch, pointer, button);
         return true;
     }
 
@@ -113,7 +113,12 @@ public class GameScreen extends BaseScreen {
         }
         bulletPool.updateActiveSprites(delta);
         enemyPool.updateActiveSprites(delta);
-        ship.update(delta);
+        mainShip.update(delta);
+        enemyGenerator.generate(delta);
+    }
+
+    private void checkCollisions() {
+
     }
 
     private void freeAllDestroyedActiveSprites() {
@@ -130,7 +135,7 @@ public class GameScreen extends BaseScreen {
             star.draw(batch);
         }
         bulletPool.draw(batch);
-        ship.draw(batch);
+        mainShip.draw(batch);
         enemyPool.draw(batch);
         batch.end();
     }

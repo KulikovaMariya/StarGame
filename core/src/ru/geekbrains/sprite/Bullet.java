@@ -16,6 +16,14 @@ public class Bullet extends Sprite {
         regions = new TextureRegion[1];
     }
 
+    public Object getOwner() {
+        return owner;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
     public void set(Object owner, TextureRegion region, Vector2 pos0, Vector2 v0, float height,
                     Rect worldBounds, int demage) {
         this.owner = owner;

@@ -2,45 +2,35 @@ package ru.geekbrains.sprite;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import ru.geekbrains.base.Sprite;
+
+import ru.geekbrains.base.Ship;
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 
-public class Ship extends Sprite {
+public class MainShip extends Ship {
 
     private static final int INVALID_POINTER = -1;
-    private Sound shootSound;
-
-    private TextureRegion bulletRegion;
-
-    private Vector2 v0 = new Vector2(0.5f, 0);
-    private Vector2 v = new Vector2();
-    private Vector2 bulletV = new Vector2(0, 0.5f);
 
     private boolean isPressedLeft = false;
     private boolean isPressedRight = false;
 
-    private Rect worldBounds;
-
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
 
-    private float reloadInterval;
-    private float reloadTimer;
-
-    private BulletPool bulletPool;
-
-
-    public Ship(TextureAtlas atlas, BulletPool bulletPool) {
+    public MainShip(TextureAtlas atlas, BulletPool bulletPool) {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
         this.bulletPool = bulletPool;
         this.bulletRegion = atlas.findRegion("bulletMainShip");
         this.reloadInterval = 0.2f;
         this.shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
+        v0 = new Vector2(0.5f, 0);
+        v = new Vector2();
+        bulletV = new Vector2(0, 0.5f);
+        this.damage = 1;
+        this.hp = 10;
+        bulletHeight = 0.01f;
     }
 
     @Override
@@ -48,9 +38,6 @@ public class Ship extends Sprite {
         this.worldBounds = worldBounds;
         setHeightProportion(0.15f);
         setBottom(worldBounds.getBottom() + 0.05f);
-    }
-
-    public void show() {
     }
 
     @Override
@@ -122,9 +109,6 @@ public class Ship extends Sprite {
                 moveRight();
                 isPressedRight = true;
                 break;
-             case Input.Keys.UP:
-                 shoot();
-                 break;
         }
         return true;
     }
@@ -150,10 +134,6 @@ public class Ship extends Sprite {
         return true;
     }
 
-    public void dispose() {
-        shootSound.dispose();
-    }
-
     private void moveRight() {
         v.set(v0);
     }
@@ -164,11 +144,5 @@ public class Ship extends Sprite {
 
     private void stop() {
         v.setZero();
-    }
-
-    private void shoot() {
-        Bullet bullet = bulletPool.obtain();
-        bullet.set(this, bulletRegion, pos, bulletV, 0.01f, worldBounds, 1);
-        shootSound.play();
     }
 }
