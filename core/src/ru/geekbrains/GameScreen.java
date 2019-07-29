@@ -13,11 +13,11 @@ import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 import ru.geekbrains.pool.EnemyPool;
 import ru.geekbrains.sprite.Background;
+import ru.geekbrains.sprite.Bullet;
 import ru.geekbrains.sprite.EnemyShip;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyGenerator;
-import ru.geekbrains.utils.Regions;
 
 public class GameScreen extends BaseScreen {
 
@@ -29,7 +29,6 @@ public class GameScreen extends BaseScreen {
     private EnemyPool enemyPool;
     private EnemyGenerator enemyGenerator;
     private BulletPool bulletPool;
-    private TextureRegion[] enemyRegion;
     private static final int STAR_COUNT = 64;
     private Music music;
 
@@ -43,7 +42,6 @@ public class GameScreen extends BaseScreen {
         atlas = new TextureAtlas("mainAtlas.tpack");
         bg = new Texture("bg.png");
         background = new Background(new TextureRegion(bg));
-        enemyRegion = Regions.split(atlas.findRegion("enemy2"), 1, 2, 1);
         starArray = new Star[STAR_COUNT];
         for (int i = 0; i < STAR_COUNT; i++) {
             starArray[i] = new Star(atlas);
@@ -58,7 +56,7 @@ public class GameScreen extends BaseScreen {
     public void render(float delta) {
         super.render(delta);
         update(delta);
-        checkCollisions(enemyPool);
+        checkCollisions(enemyPool, bulletPool);
         freeAllDestroyedActiveSprites();
         draw();
     }
@@ -118,10 +116,20 @@ public class GameScreen extends BaseScreen {
         enemyGenerator.generate(delta);
     }
 
-    private void checkCollisions(EnemyPool enemyPool) {
+    private void checkCollisions(EnemyPool enemyPool, BulletPool bulletPool) {
         for (EnemyShip enemy : enemyPool.getActiveObjects()) {
             if (!enemy.isOutside(mainShip)) {
                 enemy.setDestroyed();
+            }
+            for (Bullet bullet : bulletPool.getActiveObjects()) {
+                if (bullet.getOwner().equals(mainShip)) {
+                    if (!bullet.isOutside(enemy)) {
+                        enemy.subDamage(bullet.getDamage());
+                        if (enemy.getHp() <= 0) {
+                            enemy.setDestroyed();
+                        }
+                    }
+                }
             }
         }
     }

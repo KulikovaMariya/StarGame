@@ -25,14 +25,14 @@ public class Bullet extends Sprite {
     }
 
     public void set(Object owner, TextureRegion region, Vector2 pos0, Vector2 v0, float height,
-                    Rect worldBounds, int demage) {
+                    Rect worldBounds, int damage) {
         this.owner = owner;
         this.regions[0] = region;
         this.pos.set(pos0);
         this.v.set(v0);
         setHeightProportion(height);
         this.worldBounds = worldBounds;
-        this.damage = demage;
+        this.damage = damage;
     }
 
     @Override
