@@ -125,6 +125,7 @@ public class GameScreen extends BaseScreen {
                 if (bullet.getOwner().equals(mainShip)) {
                     if (!bullet.isOutside(enemy)) {
                         enemy.subDamage(bullet.getDamage());
+                        bullet.setDestroyed();
                         if (enemy.getHp() <= 0) {
                             enemy.setDestroyed();
                         }
