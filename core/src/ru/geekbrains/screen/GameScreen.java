@@ -18,6 +18,7 @@ import ru.geekbrains.pool.ExplosionPool;
 import ru.geekbrains.sprite.Background;
 import ru.geekbrains.sprite.Bullet;
 import ru.geekbrains.sprite.EnemyShip;
+import ru.geekbrains.sprite.GameOver;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyGenerator;
@@ -40,6 +41,7 @@ public class GameScreen extends BaseScreen {
     private static final int STAR_COUNT = 64;
     private Music music;
     private Sound explosionSound;
+    private GameOver gameOver;
 
     @Override
     public void show() {
@@ -52,6 +54,7 @@ public class GameScreen extends BaseScreen {
         atlas = new TextureAtlas("mainAtlas.tpack");
         bg = new Texture("bg.png");
         background = new Background(new TextureRegion(bg));
+        gameOver = new GameOver(atlas.findRegion("message_game_over"), worldBounds);
         starArray = new Star[STAR_COUNT];
         for (int i = 0; i < STAR_COUNT; i++) {
             starArray[i] = new Star(atlas);
@@ -218,6 +221,9 @@ public class GameScreen extends BaseScreen {
             bulletPool.draw(batch);
             mainShip.draw(batch);
             enemyPool.draw(batch);
+        }
+        if (state == State.GAME_OVER) {
+            gameOver.draw(batch);
         }
         batch.end();
     }
