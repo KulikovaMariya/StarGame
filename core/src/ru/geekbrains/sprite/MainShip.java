@@ -135,6 +135,15 @@ public class MainShip extends Ship {
         return true;
     }
 
+    public boolean isBulletCillision(Rect bullet) {
+        return (
+                bullet.getRight() > getLeft()
+                        && bullet.getLeft() < getRight()
+                        && bullet.getBottom() < pos.y
+                        && bullet.getTop() > getBottom()
+        );
+    }
+
     private void moveRight() {
         v.set(v0);
     }

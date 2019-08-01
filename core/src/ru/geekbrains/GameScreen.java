@@ -159,7 +159,7 @@ public class GameScreen extends BaseScreen {
         }
         for (Bullet bullet : bulletPool.getActiveObjects()) {
             if (!bullet.getOwner().equals(mainShip)) {
-                if (bullet.isOutside(mainShip) && !mainShip.isDestroyed()) {
+                if (mainShip.isBulletCillision(bullet) && !mainShip.isDestroyed()) {
                     mainShip.damage(bullet.getDamage());
                     bullet.setDestroyed();
                     if (mainShip.getHp() <= 0) {
@@ -169,7 +169,7 @@ public class GameScreen extends BaseScreen {
                 }
             } else {
                 for (EnemyShip enemy : enemyPool.getActiveObjects()) {
-                    if (!bullet.isOutside(enemy) && !enemy.isDestroyed()) {
+                    if (enemy.isBulletCillision(bullet) && !enemy.isDestroyed()) {
                         enemy.damage(bullet.getDamage());
                         bullet.setDestroyed();
                         if (enemy.getHp() <= 0) {

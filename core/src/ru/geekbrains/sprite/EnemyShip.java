@@ -74,4 +74,13 @@ public class EnemyShip extends Ship {
         reloadTimer = reloadInterval;
         state = State.DESCENT;
     }
+
+    public boolean isBulletCillision(Rect bullet) {
+        return (
+                bullet.getRight() > getLeft()
+                        && bullet.getLeft() < getRight()
+                        && bullet.getBottom() < getTop()
+                        && bullet.getTop() > pos.y
+        );
+    }
 }
