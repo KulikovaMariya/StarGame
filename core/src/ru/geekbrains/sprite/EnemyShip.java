@@ -28,6 +28,7 @@ public class EnemyShip extends Ship {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
         pos.mulAdd(v, delta);
         switch (state) {
             case DESCENT:

@@ -21,6 +21,10 @@ import ru.geekbrains.utils.EnemyGenerator;
 
 public class GameScreen extends BaseScreen {
 
+    private enum State {PLAYING, PAUSE, GAME_OVER}
+
+    private State state;
+    private State stateBuffer;
     private TextureAtlas atlas;
     private Texture bg;
     private Background background;
@@ -50,6 +54,8 @@ public class GameScreen extends BaseScreen {
         enemyPool = new EnemyPool(bulletPool, worldBounds);
         enemyGenerator = new EnemyGenerator(enemyPool, atlas, worldBounds);
         mainShip = new MainShip(atlas, bulletPool);
+        state = State.PLAYING;
+        stateBuffer = State.PLAYING;
     }
 
     @Override
@@ -72,6 +78,19 @@ public class GameScreen extends BaseScreen {
     }
 
     @Override
+    public void pause() {
+        super.pause();
+        stateBuffer = state;
+        state = State.PAUSE;
+    }
+
+    @Override
+    public void resume() {
+        super.resume();
+        state = stateBuffer;
+    }
+
+    @Override
     public void dispose() {
         super.dispose();
         atlas.dispose();
@@ -84,25 +103,33 @@ public class GameScreen extends BaseScreen {
 
     @Override
     public boolean keyDown(int keycode) {
-        mainShip.keyDown(keycode);
+        if (state == State.PLAYING) {
+            mainShip.keyDown(keycode);
+        }
         return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        mainShip.keyUp(keycode);
+        if (state == State.PLAYING) {
+            mainShip.keyUp(keycode);
+        }
         return true;
     }
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        mainShip.touchDown(touch, pointer, button);
+        if (state == State.PLAYING) {
+            mainShip.touchDown(touch, pointer, button);
+        }
         return true;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        mainShip.touchUp(touch, pointer, button);
+        if (state == State.PLAYING) {
+            mainShip.touchUp(touch, pointer, button);
+        }
         return true;
     }
 
@@ -110,21 +137,40 @@ public class GameScreen extends BaseScreen {
         for (Star star : starArray) {
             star.update(delta);
         }
-        bulletPool.updateActiveSprites(delta);
-        enemyPool.updateActiveSprites(delta);
-        mainShip.update(delta);
-        enemyGenerator.generate(delta);
+        if (state == State.PLAYING) {
+            bulletPool.updateActiveSprites(delta);
+            enemyPool.updateActiveSprites(delta);
+            mainShip.update(delta);
+            enemyGenerator.generate(delta);
+        }
     }
 
     private void checkCollisions(EnemyPool enemyPool, BulletPool bulletPool) {
+        if (state != State.PLAYING) {
+            return;
+        }
         for (EnemyShip enemy : enemyPool.getActiveObjects()) {
-            if (!enemy.isOutside(mainShip)) {
+            float minDistance = enemy.getHalfWidth() + mainShip.getHalfWidth();
+            if ((enemy.pos.dst(mainShip.pos) < minDistance) && !enemy.isDestroyed()) {
                 enemy.setDestroyed();
+                mainShip.setDestroyed();
+                state = State.GAME_OVER;
             }
-            for (Bullet bullet : bulletPool.getActiveObjects()) {
-                if (bullet.getOwner().equals(mainShip)) {
-                    if (!bullet.isOutside(enemy)) {
-                        enemy.subDamage(bullet.getDamage());
+        }
+        for (Bullet bullet : bulletPool.getActiveObjects()) {
+            if (!bullet.getOwner().equals(mainShip)) {
+                if (bullet.isOutside(mainShip) && !mainShip.isDestroyed()) {
+                    mainShip.damage(bullet.getDamage());
+                    bullet.setDestroyed();
+                    if (mainShip.getHp() <= 0) {
+                        mainShip.setDestroyed();
+                        state = State.GAME_OVER;
+                    }
+                }
+            } else {
+                for (EnemyShip enemy : enemyPool.getActiveObjects()) {
+                    if (!bullet.isOutside(enemy) && !enemy.isDestroyed()) {
+                        enemy.damage(bullet.getDamage());
                         bullet.setDestroyed();
                         if (enemy.getHp() <= 0) {
                             enemy.setDestroyed();
@@ -134,6 +180,7 @@ public class GameScreen extends BaseScreen {
             }
         }
     }
+
 
     private void freeAllDestroyedActiveSprites() {
         bulletPool.freeAllDestroyedActiveSprites();
@@ -148,9 +195,11 @@ public class GameScreen extends BaseScreen {
         for (Star star : starArray) {
             star.draw(batch);
         }
-        bulletPool.draw(batch);
-        mainShip.draw(batch);
-        enemyPool.draw(batch);
+        if (state == State.PLAYING) {
+            bulletPool.draw(batch);
+            mainShip.draw(batch);
+            enemyPool.draw(batch);
+        }
         batch.end();
     }
 }

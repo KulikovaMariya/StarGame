@@ -21,6 +21,9 @@ public abstract class Ship extends Sprite {
     protected int damage;
     protected int hp;
     protected float bulletHeight;
+    private float damageAnimateInterval = 0.1f;
+    private float damageAnimateTimer = damageAnimateInterval;
+
 
     public Ship() {
     }
@@ -49,7 +52,23 @@ public abstract class Ship extends Sprite {
         return hp;
     }
 
-    public void subDamage(int damage) {
+    public void damage(int damage) {
+        frame = 1;
+        damageAnimateTimer = 0f;
         hp -= damage;
+    }
+
+    @Override
+    public void setDestroyed() {
+        super.setDestroyed();
+        hp = 0;
+    }
+
+    @Override
+    public void update(float delta) {
+        damageAnimateTimer += delta;
+        if (damageAnimateTimer >= damageAnimateInterval) {
+            frame = 0;
+        }
     }
 }
