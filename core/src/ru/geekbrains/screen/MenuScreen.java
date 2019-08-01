@@ -1,4 +1,4 @@
-package ru.geekbrains;
+package ru.geekbrains.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;

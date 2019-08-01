@@ -16,13 +16,13 @@ public abstract class Sprite extends Rect {
     public Sprite() {
     }
 
-    public Sprite(TextureRegion region, int rows, int cols, int frames) {
-        this.regions = Regions.split(region, 1, 2, 2);
-    }
-
     public Sprite(TextureRegion region) {
         this.regions = new TextureRegion[1];
         this.regions[0] = region;
+    }
+
+    public Sprite(TextureRegion region, int rows, int cols, int frames) {
+        this.regions = Regions.split(region, rows, cols, frames);
     }
 
     public void resize(Rect worldBound){

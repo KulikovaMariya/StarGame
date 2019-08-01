@@ -1,10 +1,9 @@
 package ru.geekbrains.sprite;
 
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import ru.geekbrains.Game;
-import ru.geekbrains.GameScreen;
+import ru.geekbrains.screen.Game;
+import ru.geekbrains.screen.GameScreen;
 import ru.geekbrains.base.ScaledTouchUpButton;
 import ru.geekbrains.math.Rect;
 
