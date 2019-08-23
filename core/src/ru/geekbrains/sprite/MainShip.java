@@ -13,6 +13,7 @@ import ru.geekbrains.pool.ExplosionPool;
 public class MainShip extends Ship {
 
     private static final int INVALID_POINTER = -1;
+    private static final int HP = 100;
 
     private boolean isPressedLeft = false;
     private boolean isPressedRight = false;
@@ -137,13 +138,24 @@ public class MainShip extends Ship {
         return true;
     }
 
-    public boolean isBulletCillision(Rect bullet) {
+    public boolean isBulletCollision(Rect bullet) {
         return (
                 bullet.getRight() > getLeft()
                         && bullet.getLeft() < getRight()
                         && bullet.getBottom() < pos.y
                         && bullet.getTop() > getBottom()
         );
+    }
+
+    public void startNewGame() {
+        stop();
+        isPressedLeft = false;
+        isPressedRight = false;
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        hp = HP;
+        pos.x = worldBounds.pos.x;
+        flushDestroyed();
     }
 
     private void moveRight() {

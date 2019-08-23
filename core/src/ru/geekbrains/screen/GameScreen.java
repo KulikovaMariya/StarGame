@@ -17,8 +17,9 @@ import ru.geekbrains.pool.EnemyPool;
 import ru.geekbrains.pool.ExplosionPool;
 import ru.geekbrains.sprite.Background;
 import ru.geekbrains.sprite.Bullet;
+import ru.geekbrains.sprite.ButtonNewGame;
 import ru.geekbrains.sprite.EnemyShip;
-import ru.geekbrains.sprite.GameOver;
+import ru.geekbrains.sprite.MessageGameOver;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyGenerator;
@@ -41,7 +42,8 @@ public class GameScreen extends BaseScreen {
     private static final int STAR_COUNT = 64;
     private Music music;
     private Sound explosionSound;
-    private GameOver gameOver;
+    private MessageGameOver gameOver;
+    private ButtonNewGame buttonNewGame;
 
     @Override
     public void show() {
@@ -54,7 +56,7 @@ public class GameScreen extends BaseScreen {
         atlas = new TextureAtlas("mainAtlas.tpack");
         bg = new Texture("bg.png");
         background = new Background(new TextureRegion(bg));
-        gameOver = new GameOver(atlas.findRegion("message_game_over"), worldBounds);
+        gameOver = new MessageGameOver(atlas);
         starArray = new Star[STAR_COUNT];
         for (int i = 0; i < STAR_COUNT; i++) {
             starArray[i] = new Star(atlas);
@@ -66,6 +68,7 @@ public class GameScreen extends BaseScreen {
         mainShip = new MainShip(atlas, bulletPool, explosionPool);
         state = State.PLAYING;
         stateBuffer = State.PLAYING;
+        buttonNewGame = new ButtonNewGame(atlas, this);
     }
 
     @Override
@@ -85,6 +88,8 @@ public class GameScreen extends BaseScreen {
             star.resize(worldBounds);
         }
         mainShip.resize(worldBounds);
+        gameOver.resize(worldBounds);
+        buttonNewGame.resize(worldBounds);
     }
 
     @Override
@@ -139,6 +144,8 @@ public class GameScreen extends BaseScreen {
     public boolean touchDown(Vector2 touch, int pointer, int button) {
         if (state == State.PLAYING) {
             mainShip.touchDown(touch, pointer, button);
+        } else if (state == State.GAME_OVER) {
+            buttonNewGame.touchDown(touch, pointer, button);
         }
         return true;
     }
@@ -147,8 +154,18 @@ public class GameScreen extends BaseScreen {
     public boolean touchUp(Vector2 touch, int pointer, int button) {
         if (state == State.PLAYING) {
             mainShip.touchUp(touch, pointer, button);
+        } else if (state == State.GAME_OVER) {
+            buttonNewGame.touchUp(touch, pointer, button);
         }
         return true;
+    }
+
+    public void startNewGame() {
+        state = State.PLAYING;
+        mainShip.startNewGame();
+        bulletPool.freeAllActiveObjects();
+        enemyPool.freeAllActiveObjects();
+        explosionPool.freeAllActiveObjects();
     }
 
     private void update(float delta) {
@@ -180,7 +197,7 @@ public class GameScreen extends BaseScreen {
         }
         for (Bullet bullet : bulletPool.getActiveObjects()) {
             if (!bullet.getOwner().equals(mainShip)) {
-                if (mainShip.isBulletCillision(bullet) && !mainShip.isDestroyed()) {
+                if (mainShip.isBulletCollision(bullet) && !mainShip.isDestroyed()) {
                     mainShip.damage(bullet.getDamage());
                     bullet.setDestroyed();
                     if (mainShip.getHp() <= 0) {
@@ -217,15 +234,33 @@ public class GameScreen extends BaseScreen {
             star.draw(batch);
         }
         explosionPool.draw(batch);
-        if (state == State.PLAYING || state == State.PAUSE && stateBuffer != State.GAME_OVER) {
-            bulletPool.draw(batch);
-            mainShip.draw(batch);
-            enemyPool.draw(batch);
-        }
-        if (state == State.GAME_OVER) {
-            gameOver.draw(batch);
+        switch (state) {
+            case PLAYING:
+                drawGameObjects();
+                break;
+            case PAUSE:
+                if (stateBuffer != State.GAME_OVER) {
+                    drawGameObjects();
+                } else {
+                    drawButtons();
+                }
+                break;
+            case GAME_OVER:
+                drawButtons();
+                break;
         }
         batch.end();
+    }
+
+    private void drawGameObjects() {
+        bulletPool.draw(batch);
+        mainShip.draw(batch);
+        enemyPool.draw(batch);
+    }
+
+    private void drawButtons() {
+        gameOver.draw(batch);
+        buttonNewGame.draw(batch);
     }
 
     private void pauseOn() {
