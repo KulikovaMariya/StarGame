@@ -25,13 +25,13 @@ import ru.geekbrains.sprite.MessageGameOver;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyGenerator;
+import ru.geekbrains.utils.HpIndicator;
 
 public class GameScreen extends BaseScreen {
 
     private enum State {PLAYING, PAUSE, GAME_OVER}
 
     private static final String FRAGS = "frags:";
-    private static final String HP = "HP:";
     private static final String LEVEL = "level:";
     private State state;
     private State stateBuffer;
@@ -54,6 +54,7 @@ public class GameScreen extends BaseScreen {
     private StringBuilder sbHp;
     private StringBuilder sbLevel;
     private int frags;
+    private HpIndicator hpIndicator;
 
     @Override
     public void show() {
@@ -84,6 +85,7 @@ public class GameScreen extends BaseScreen {
         sbFrags = new StringBuilder();
         sbHp = new StringBuilder();
         sbLevel = new StringBuilder();
+        hpIndicator = new HpIndicator(mainShip, 7);
     }
 
     @Override
@@ -105,6 +107,7 @@ public class GameScreen extends BaseScreen {
         mainShip.resize(worldBounds);
         gameOver.resize(worldBounds);
         buttonNewGame.resize(worldBounds);
+        hpIndicator.resize(worldBounds);
     }
 
     @Override
@@ -274,6 +277,7 @@ public class GameScreen extends BaseScreen {
         bulletPool.draw(batch);
         mainShip.draw(batch);
         enemyPool.draw(batch);
+        hpIndicator.draw(batch);
         printInfo();
     }
 
@@ -299,8 +303,6 @@ public class GameScreen extends BaseScreen {
         sbLevel.setLength(0);
         font.draw(batch,
                 sbFrags.append(FRAGS).append(frags), worldBounds.getLeft(), worldBounds.getTop());
-        font.draw(batch,
-                sbHp.append(HP).append(mainShip.getHp()), worldBounds.pos.x, worldBounds.getTop(), Align.center);
         font.draw(batch,
                 sbLevel.append(LEVEL).append(enemyGenerator.getLevel()), worldBounds.getRight(), worldBounds.getTop(), Align.right);
     }
