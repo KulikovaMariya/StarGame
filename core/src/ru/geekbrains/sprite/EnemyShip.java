@@ -17,7 +17,9 @@ public class EnemyShip extends Ship {
 
     private Vector2 descentV = new Vector2(0, -0.15f);
 
-    public EnemyShip(BulletPool bulletPool, ExplosionPool explosionPool, Rect worldBounds) {
+    private MainShip mainShip;
+
+    public EnemyShip(BulletPool bulletPool, ExplosionPool explosionPool, Rect worldBounds, MainShip mainShip) {
         this.bulletPool = bulletPool;
         this.explosionPool = explosionPool;
         this.worldBounds = worldBounds;
@@ -26,6 +28,7 @@ public class EnemyShip extends Ship {
         bulletV = new Vector2();
         shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/bullet.wav"));
         state = State.DESCENT;
+        this.mainShip = mainShip;
     }
 
     @Override
@@ -46,6 +49,7 @@ public class EnemyShip extends Ship {
                     shoot();
                 }
                 if (getBottom() < worldBounds.getBottom()) {
+                    mainShip.damage(damage);
                     setDestroyed();
                 }
                 break;

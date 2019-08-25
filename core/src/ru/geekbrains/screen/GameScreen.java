@@ -9,8 +9,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Align;
 
 import ru.geekbrains.base.BaseScreen;
+import ru.geekbrains.base.Font;
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 import ru.geekbrains.pool.EnemyPool;
@@ -28,6 +30,9 @@ public class GameScreen extends BaseScreen {
 
     private enum State {PLAYING, PAUSE, GAME_OVER}
 
+    private static final String FRAGS = "frags:";
+    private static final String HP = "HP:";
+    private static final String LEVEL = "level:";
     private State state;
     private State stateBuffer;
     private TextureAtlas atlas;
@@ -44,6 +49,11 @@ public class GameScreen extends BaseScreen {
     private Sound explosionSound;
     private MessageGameOver gameOver;
     private ButtonNewGame buttonNewGame;
+    private Font font;
+    private StringBuilder sbFrags;
+    private StringBuilder sbHp;
+    private StringBuilder sbLevel;
+    private int frags;
 
     @Override
     public void show() {
@@ -63,12 +73,17 @@ public class GameScreen extends BaseScreen {
         }
         bulletPool = new BulletPool();
         explosionPool = new ExplosionPool(atlas, explosionSound);
-        enemyPool = new EnemyPool(bulletPool, worldBounds, explosionPool);
-        enemyGenerator = new EnemyGenerator(enemyPool, atlas, worldBounds);
         mainShip = new MainShip(atlas, bulletPool, explosionPool);
+        enemyPool = new EnemyPool(bulletPool, worldBounds, explosionPool, mainShip);
+        enemyGenerator = new EnemyGenerator(enemyPool, atlas, worldBounds);
         state = State.PLAYING;
         stateBuffer = State.PLAYING;
         buttonNewGame = new ButtonNewGame(atlas, this);
+        font = new Font("font/font.fnt", "font/font.png");
+        font.setSize(0.03f);
+        sbFrags = new StringBuilder();
+        sbHp = new StringBuilder();
+        sbLevel = new StringBuilder();
     }
 
     @Override
@@ -115,6 +130,7 @@ public class GameScreen extends BaseScreen {
         music.dispose();
         explosionSound.dispose();
         mainShip.dispose();
+        font.dispose();
     }
 
     @Override
@@ -166,6 +182,7 @@ public class GameScreen extends BaseScreen {
         bulletPool.freeAllActiveObjects();
         enemyPool.freeAllActiveObjects();
         explosionPool.freeAllActiveObjects();
+        frags = 0;
     }
 
     private void update(float delta) {
@@ -179,7 +196,7 @@ public class GameScreen extends BaseScreen {
             bulletPool.updateActiveSprites(delta);
             enemyPool.updateActiveSprites(delta);
             mainShip.update(delta);
-            enemyGenerator.generate(delta);
+            enemyGenerator.generate(delta, frags);
         }
     }
 
@@ -212,6 +229,7 @@ public class GameScreen extends BaseScreen {
                         bullet.setDestroyed();
                         if (enemy.getHp() <= 0) {
                             enemy.setDestroyed();
+                            frags++;
                         }
                     }
                 }
@@ -256,6 +274,7 @@ public class GameScreen extends BaseScreen {
         bulletPool.draw(batch);
         mainShip.draw(batch);
         enemyPool.draw(batch);
+        printInfo();
     }
 
     private void drawButtons() {
@@ -272,5 +291,17 @@ public class GameScreen extends BaseScreen {
     private void pauseOff() {
         state = stateBuffer;
         music.play();
+    }
+
+    private void printInfo() {
+        sbFrags.setLength(0);
+        sbHp.setLength(0);
+        sbLevel.setLength(0);
+        font.draw(batch,
+                sbFrags.append(FRAGS).append(frags), worldBounds.getLeft(), worldBounds.getTop());
+        font.draw(batch,
+                sbHp.append(HP).append(mainShip.getHp()), worldBounds.pos.x, worldBounds.getTop(), Align.center);
+        font.draw(batch,
+                sbLevel.append(LEVEL).append(enemyGenerator.getLevel()), worldBounds.getRight(), worldBounds.getTop(), Align.right);
     }
 }

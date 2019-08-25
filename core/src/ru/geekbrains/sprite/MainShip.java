@@ -32,7 +32,7 @@ public class MainShip extends Ship {
         v = new Vector2();
         bulletV = new Vector2(0, 0.5f);
         this.damage = 1;
-        this.hp = 10;
+        this.hp = HP;
         bulletHeight = 0.01f;
     }
 
