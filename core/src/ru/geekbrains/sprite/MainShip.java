@@ -8,10 +8,12 @@ import com.badlogic.gdx.math.Vector2;
 import ru.geekbrains.base.Ship;
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
+import ru.geekbrains.pool.ExplosionPool;
 
 public class MainShip extends Ship {
 
     private static final int INVALID_POINTER = -1;
+    public static final int HP = 100;
 
     private boolean isPressedLeft = false;
     private boolean isPressedRight = false;
@@ -19,9 +21,10 @@ public class MainShip extends Ship {
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
 
-    public MainShip(TextureAtlas atlas, BulletPool bulletPool) {
+    public MainShip(TextureAtlas atlas, BulletPool bulletPool, ExplosionPool explosionPool) {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
         this.bulletPool = bulletPool;
+        this.explosionPool = explosionPool;
         this.bulletRegion = atlas.findRegion("bulletMainShip");
         this.reloadInterval = 0.2f;
         this.shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
@@ -29,7 +32,7 @@ public class MainShip extends Ship {
         v = new Vector2();
         bulletV = new Vector2(0, 0.5f);
         this.damage = 1;
-        this.hp = 10;
+        this.hp = HP;
         bulletHeight = 0.01f;
     }
 
@@ -42,6 +45,7 @@ public class MainShip extends Ship {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
         pos.mulAdd(v, delta);
         reloadTimer += delta;
         if (reloadTimer >= reloadInterval) {
@@ -132,6 +136,26 @@ public class MainShip extends Ship {
                 break;
         }
         return true;
+    }
+
+    public boolean isBulletCollision(Rect bullet) {
+        return (
+                bullet.getRight() > getLeft()
+                        && bullet.getLeft() < getRight()
+                        && bullet.getBottom() < pos.y
+                        && bullet.getTop() > getBottom()
+        );
+    }
+
+    public void startNewGame() {
+        stop();
+        isPressedLeft = false;
+        isPressedRight = false;
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        hp = HP;
+        pos.x = worldBounds.pos.x;
+        flushDestroyed();
     }
 
     private void moveRight() {

@@ -6,7 +6,9 @@ import com.badlogic.gdx.math.Vector2;
 
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
+import ru.geekbrains.pool.ExplosionPool;
 import ru.geekbrains.sprite.Bullet;
+import ru.geekbrains.sprite.Explosion;
 
 public abstract class Ship extends Sprite {
     protected TextureRegion bulletRegion;
@@ -21,6 +23,10 @@ public abstract class Ship extends Sprite {
     protected int damage;
     protected int hp;
     protected float bulletHeight;
+    private float damageAnimateInterval = 0.1f;
+    private float damageAnimateTimer = damageAnimateInterval;
+    protected ExplosionPool explosionPool;
+
 
     public Ship() {
     }
@@ -45,11 +51,33 @@ public abstract class Ship extends Sprite {
         shootSound.play();
     }
 
+    public void shipExplosion() {
+        Explosion explosion = explosionPool.obtain();
+        explosion.set(getHeight(), pos);
+    }
+
     public int getHp() {
         return hp;
     }
 
-    public void subDamage(int damage) {
+    public void damage(int damage) {
+        frame = 1;
+        damageAnimateTimer = 0f;
         hp -= damage;
+    }
+
+    @Override
+    public void setDestroyed() {
+        super.setDestroyed();
+        hp = 0;
+        shipExplosion();
+    }
+
+    @Override
+    public void update(float delta) {
+        damageAnimateTimer += delta;
+        if (damageAnimateTimer >= damageAnimateInterval) {
+            frame = 0;
+        }
     }
 }
